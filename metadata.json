@@ -1,0 +1,6 @@
+{
+  "name": "سامانه ویندوز سن بارداری و سونوگرافی NT",
+  "description": "نرم‌افزار رومیزی ویندوز جهت محاسبه سن بارداری، پنجره طلایی سونوگرافی NT، تخمین زایمان و انطباق ACOG ویژه مراکز بهداشت و درمان",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

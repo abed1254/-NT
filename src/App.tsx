@@ -209,6 +209,18 @@ export default function App() {
     return getPrenatalMilestones(lmpDateObj);
   }, [lmpDateObj]);
 
+  // Next upcoming milestone (for highlighting in the calendar)
+  const nextMilestoneId = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const upcoming = milestones.filter((m) => {
+      const d = new Date(m.date);
+      d.setHours(0, 0, 0, 0);
+      return d.getTime() >= today.getTime();
+    });
+    return upcoming.length > 0 ? upcoming[0].id : null;
+  }, [milestones]);
+
   // Save patients list to localStorage
   useEffect(() => {
     try {
@@ -491,7 +503,7 @@ export default function App() {
 
   return (
     <div 
-      className="h-screen w-screen flex flex-col overflow-hidden bg-slate-950 text-slate-100 select-none" 
+      className="h-screen w-screen flex flex-col overflow-hidden bg-slate-950 text-slate-100" 
       dir="rtl"
     >
       {/* 1. Native Windows 11 Title Bar */}
@@ -1495,20 +1507,41 @@ export default function App() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {milestones.map((m) => {
                   const MilestoneIcon = MILESTONE_ICONS[m.iconName];
+                  const todayStart = new Date();
+                  todayStart.setHours(0, 0, 0, 0);
+                  const mDay = new Date(m.date);
+                  mDay.setHours(0, 0, 0, 0);
+                  const diffDays = Math.round((mDay.getTime() - todayStart.getTime()) / 86400000);
+                  const isPast = diffDays < 0;
+                  const isNext = m.id === nextMilestoneId;
                   return (
                   <div
                     key={m.id}
-                    className={`p-4 rounded-2xl border ${m.bgClass} flex flex-col justify-between space-y-3 shadow-sm`}
+                    className={`p-4 rounded-2xl border ${m.bgClass} flex flex-col justify-between space-y-3 shadow-sm transition ${
+                      isPast ? 'opacity-55' : ''
+                    } ${isNext ? 'ring-2 ring-emerald-500/70 shadow-lg shadow-emerald-500/10' : ''}`}
                   >
                     <div>
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-2">
                         <span className="text-xs font-extrabold text-white flex items-center gap-1.5">
-                          {MilestoneIcon && <MilestoneIcon className={`w-4 h-4 ${m.colorClass}`} />}
+                          {MilestoneIcon && <MilestoneIcon className={`w-4 h-4 flex-shrink-0 ${m.colorClass}`} />}
                           {m.title}
                         </span>
+                        {isNext && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex-shrink-0">
+                            نوبت بعدی
+                          </span>
+                        )}
                       </div>
                       <span className={`text-[11px] font-bold block mt-1 ${m.colorClass}`}>
                         {m.weekRange}
+                        {isPast ? (
+                          <span className="text-slate-500 font-medium"> — {Math.abs(diffDays)} روز گذشته</span>
+                        ) : diffDays === 0 ? (
+                          <span className="text-emerald-400 font-black"> — امروز!</span>
+                        ) : (
+                          <span className="text-slate-400 font-medium"> — {diffDays} روز مانده</span>
+                        )}
                       </span>
                       <p className="text-[11px] text-slate-400 mt-1.5 leading-relaxed">
                         {m.description}

@@ -31,7 +31,10 @@ import {
   Volume2,
   VolumeX,
   Building2,
-  FolderOpen
+  FolderOpen,
+  HeartPulse,
+  TestTube2,
+  Syringe
 } from 'lucide-react';
 import { JalaliDate, PERSIAN_MONTH_NAMES } from './utils/jalali';
 import { 
@@ -54,6 +57,18 @@ import { PrintReportView } from './components/PrintReportView';
 
 const STORAGE_KEY_PATIENTS = 'sirik_pregnancy_patients_v2';
 const STORAGE_KEY_ACTIVE = 'sirik_pregnancy_active_state_v2';
+
+// Map of milestone icon names (stored as strings in calculator.ts) to Lucide components
+const MILESTONE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  HeartPulse,
+  ShieldAlert,
+  TestTube2,
+  Sparkles,
+  Activity,
+  Syringe,
+  Waves,
+  Stethoscope
+};
 
 export default function App() {
   const { isInstallable, isInstalled, install: installPwa } = usePWAInstall();
@@ -391,9 +406,27 @@ export default function App() {
 مرکز: شبکه بهداشت و درمان سیریک - خانه بهداشت گهردو
     `.trim();
 
-    navigator.clipboard.writeText(summary);
-    playSound('save');
-    setStatusMessage('خلاصه گزارش بالینی در کلیپ‌بورد ویندوز کپی شد.');
+    navigator.clipboard.writeText(summary).then(
+      () => {
+        playSound('save');
+        setStatusMessage('خلاصه گزارش بالینی در کلیپ‌بورد ویندوز کپی شد.');
+      },
+      () => {
+        // Clipboard API unavailable (e.g. non-secure context) — fall back to textarea
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = summary;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          playSound('save');
+          setStatusMessage('خلاصه گزارش بالینی در کلیپ‌بورد کپی شد.');
+        } catch {
+          alert('کپی در کلیپ‌بورد ممکن نشد؛ لطفاً دسترسی کلیپ‌بورد را بررسی کنید.');
+        }
+      }
+    );
   };
 
   const handleExportJson = () => {
@@ -450,6 +483,9 @@ export default function App() {
   const handleWindowClose = () => {
     if (confirm('آیا می‌خواهید از برنامه خارج شوید؟ پرونده‌های ذخیره‌شده حفظ می‌شوند.')) {
       window.close();
+      // Most browsers block window.close() for tabs not opened by script.
+      setStatusMessage('مرورگر اجازه بستن خودکار تب را نمی‌دهد؛ لطفاً تب را دستی ببندید.');
+      setTimeout(() => setStatusMessage('نرم‌افزار آماده به کار است'), 8000);
     }
   };
 
@@ -462,7 +498,7 @@ export default function App() {
       <WindowsTitleBar
         isMaximized={isMaximized}
         onToggleMaximize={() => setIsMaximized(!isMaximized)}
-        onMinimize={() => setStatusMessage('برنامه به حداقل رسید.')}
+        onMinimize={() => setStatusMessage('برای کوچک‌کردن پنجره از دکمه‌های مرورگر استفاده کنید.')}
         onClose={handleWindowClose}
         onOpenInstallModal={() => setShowInstallModal(true)}
         onPrint={() => window.print()}
@@ -1457,14 +1493,19 @@ export default function App() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {milestones.map((m) => (
+                {milestones.map((m) => {
+                  const MilestoneIcon = MILESTONE_ICONS[m.iconName];
+                  return (
                   <div
                     key={m.id}
                     className={`p-4 rounded-2xl border ${m.bgClass} flex flex-col justify-between space-y-3 shadow-sm`}
                   >
                     <div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-extrabold text-white">{m.title}</span>
+                        <span className="text-xs font-extrabold text-white flex items-center gap-1.5">
+                          {MilestoneIcon && <MilestoneIcon className={`w-4 h-4 ${m.colorClass}`} />}
+                          {m.title}
+                        </span>
                       </div>
                       <span className={`text-[11px] font-bold block mt-1 ${m.colorClass}`}>
                         {m.weekRange}
@@ -1481,7 +1522,8 @@ export default function App() {
                       </strong>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}

@@ -168,7 +168,7 @@ export const PrintReportView: React.FC<Props> = ({
           برنامه زمان‌بندی آزمایش‌ها و مراقبت‌های مادر و جنین
         </h4>
         <div className="grid grid-cols-2 gap-2 text-xs">
-          {milestones.slice(0, 6).map((m) => (
+          {milestones.map((m) => (
             <div key={m.id} className="flex justify-between items-center py-1 border-b border-slate-100">
               <span className="font-semibold text-slate-800">{m.title} ({m.weekRange}):</span>
               <strong className="font-bold text-slate-900">{JalaliDate.formatShamsi(m.date)}</strong>

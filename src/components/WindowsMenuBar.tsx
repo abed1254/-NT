@@ -81,7 +81,7 @@ export const WindowsMenuBar: React.FC<Props> = ({
   return (
     <div 
       ref={menuBarRef} 
-      className="windows-menubar bg-slate-900 border-b border-slate-800 text-slate-300 text-xs px-3 py-1 flex items-center gap-1 select-none z-40 relative flex-shrink-0"
+      className="windows-menubar bg-slate-900 border-b border-slate-800 text-slate-300 text-xs px-3 py-1 flex items-center gap-1 select-none z-40 relative flex-shrink-0 overflow-x-auto whitespace-nowrap"
     >
       {/* پرونده (File) */}
       <div className="relative">
